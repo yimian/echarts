@@ -14,10 +14,10 @@ define(function (require) {
     return function (api, opts) {
         opts = opts || {};
         zrUtil.defaults(opts, {
-            text: '',
+            text: '加载数据失败， 请刷新重试',
             color: '#c23531',
-            textColor: '#000',
-            maskColor: '#E7E7E7',
+            textColor: '#aaa',
+            maskColor: '#fff',
             zlevel: 0
         });
         var mask = new graphic.Rect({
@@ -29,43 +29,78 @@ define(function (require) {
             z: 10000
         });
 
-        var image = new graphic.Image({
+        var circle = new graphic.Circle({
           style: {
-            x: api.getWidth() / 5,
-            y: api.getHeight() / 10,
-            image: './images/load-error.png',
+            stroke: '#ccc',
+            lineWidth: 8,
+            fill: 'rgba(250, 250, 250, 0.8)',
           },
-          silent: true,
-          z: 10002,
+          z: 10003,
+        });
+
+        var line = new graphic.Line({
+          style: {
+            lineWidth: 8,
+            stroke: '#ccc',
+            fill: '#ccc',
+          },
+          z: 10003,
+        });
+
+        var smallCircle = new graphic.Circle({
+          style: {
+            fill: '#ccc',
+          },
+          z: 10003,
         });
 
         var labelRect = new graphic.Rect({
             style: {
                 fill: 'none',
                 text: opts.text,
-                textSize: 40,
-                textPosition: 'inside',
+                fontSize: 40,
+                textPosition: 'bottom',
                 textDistance: 10,
                 textFill: opts.textColor
             },
             zlevel: opts.zlevel,
-            z: 10001
+            z: 10006
         });
 
         var group = new graphic.Group();
-        group.add(image);
+        // group.add(image);
         group.add(labelRect);
+        group.add(circle);
+        group.add(line);
+        group.add(smallCircle);
         group.add(mask);
         // Inject resize
         group.resize = function () {
             var cx = api.getWidth() / 2;
             var cy = api.getHeight() / 2;
-            var r = 10;
+            var r = 50;
+            circle.setShape({
+              cx: cx,
+              cy: cy,
+              r: r,
+            });
+
+            line.setShape({
+              x1: cx,
+              y1: cy-25,
+              x2: cx,
+              y2: cy+15,
+            });
+
+            smallCircle.setShape({
+              cx: cx,
+              cy: cy + r - 20,
+              r: r / 10,
+            });
+
             labelRect.setShape({
-                x: cx - r,
-                y: cy - r,
-                width: r * 2,
-                height: r * 2
+                x: cx,
+                y: cy + r*1.5,
             });
 
             mask.setShape({
