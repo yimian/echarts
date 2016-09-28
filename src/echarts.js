@@ -668,6 +668,32 @@ define(function (require) {
     };
 
     /**
+     * Show loading effect
+     * @param  {string} [name='default']
+     * @param  {Object} [cfg]
+     */
+    echartsProto.showError = function (name, cfg) {
+        if (zrUtil.isObject(name)) {
+            cfg = name;
+            name = '';
+        }
+        name = name || 'error';
+
+        this.hideLoading();
+        if (!loadingEffects[name]) {
+            if (__DEV__) {
+                console.warn('Loading effects ' + name + ' not exists.');
+            }
+            return;
+        }
+        var el = loadingEffects[name](this._api, cfg);
+        var zr = this._zr;
+        this._loadingFX = el;
+
+        zr.add(el);
+    };
+
+    /**
      * Hide loading effect
      */
     echartsProto.hideLoading = function () {
@@ -1546,6 +1572,7 @@ define(function (require) {
     echarts.registerVisual(PRIORITY_VISUAL_GLOBAL, require('./visual/seriesColor'));
     echarts.registerPreprocessor(require('./preprocessor/backwardCompat'));
     echarts.registerLoading('default', require('./loading/default'));
+    echarts.registerLoading('error', require('./loading/error'));
 
     // Default action
     echarts.registerAction({
