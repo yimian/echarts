@@ -647,11 +647,20 @@ define(function (require) {
      * @param  {Object} [cfg]
      */
     echartsProto.showLoading = function (name, cfg) {
+        if (this.isError) {
+          this.hideLoading();
+          this.isError = false;
+        }
         if (zrUtil.isObject(name)) {
             cfg = name;
             name = '';
         }
         name = name || 'default';
+
+        // will not be interrupt when loadingRefresh is true
+        if (this._api.getOption() && this._api.getOption().loadingRefresh && this._loadingFX) {
+          return
+        }
 
         this.hideLoading();
         if (!loadingEffects[name]) {
@@ -668,11 +677,12 @@ define(function (require) {
     };
 
     /**
-     * Show loading effect
-     * @param  {string} [name='default']
+     * Show error effect
+     * @param  {string} [name='error']
      * @param  {Object} [cfg]
      */
     echartsProto.showError = function (name, cfg) {
+        this.isError = true;
         if (zrUtil.isObject(name)) {
             cfg = name;
             name = '';
