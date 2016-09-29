@@ -14,6 +14,13 @@
         text: 'introduction',
       },
       tooltip: {},
+      toolbox: {
+        feature: {
+          magicType: {
+            type: ['bar', 'proportion'],
+          }
+        }
+      },
       legend: {
         data: ['sales'],
       },
@@ -28,8 +35,8 @@
       }]
     };
 
-    myChart.showError()
-    // myChart.setOption(option);
+    // myChart.showError()
+    myChart.setOption(option);
   </script>
 </body>
 </html>

@@ -647,6 +647,7 @@ define(function (require) {
      * @param  {Object} [cfg]
      */
     echartsProto.showLoading = function (name, cfg) {
+        var loadingOption = this._api.getOption().loading;
         if (this.isError) {
           this.hideLoading();
           this.isError = false;
@@ -658,7 +659,7 @@ define(function (require) {
         name = name || 'default';
 
         // will not be interrupt when loadingRefresh is true
-        if (this._api.getOption() && this._api.getOption().loadingRefresh && this._loadingFX) {
+        if (loadingOption && loadingOption.refresh && this._loadingFX) {
           return
         }
 
