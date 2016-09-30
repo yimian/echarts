@@ -175,7 +175,7 @@ define(function(require) {
             }
             // Modify boundaryGap
             var coordSys = seriesModel.coordinateSystem;
-            if (coordSys && coordSys.type === 'cartesian2d' && (type === 'line' || type === 'bar')) {
+            if (coordSys && coordSys.type === 'cartesian2d' && (type === 'line' || type === 'bar' || type === 'proportion' || type === 'summation')) {
                 var categoryAxis = coordSys.getAxesByScale('ordinal')[0];
                 if (categoryAxis) {
                     var axisDim = categoryAxis.dim;
@@ -191,7 +191,9 @@ define(function(require) {
                     for (var i = 0; i <= axisIndex; i++) {
                         newOption[axisType][axisIndex] = newOption[axisType][axisIndex] || {};
                     }
-                    newOption[axisType][axisIndex].boundaryGap = type === 'bar' ? true : false;
+                    if (['bar', 'proportion'].indexOf(type) > -1) {
+                    }
+                    newOption[axisType][axisIndex].boundaryGap = ['bar', 'proportion', 'summation'].indexOf(type) > -1 ? true : false;
                 }
             }
         };

@@ -39336,7 +39336,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        },
 	        'proportion': function (seriesType, seriesId, seriesModel, model) {
 	            if (seriesType === 'bar' || seriesType === 'line') {
-	                console.log('proportion data: ', seriesModel.get('data'));
 	                var sum = seriesModel.get('data').reduce(function (a, b) { return a + b; }, 0);
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39445,7 +39444,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            // Modify boundaryGap
 	            var coordSys = seriesModel.coordinateSystem;
-	            if (coordSys && coordSys.type === 'cartesian2d' && (type === 'line' || type === 'bar')) {
+	            if (coordSys && coordSys.type === 'cartesian2d' && (type === 'line' || type === 'bar' || type === 'proportion' || type === 'summation')) {
 	                var categoryAxis = coordSys.getAxesByScale('ordinal')[0];
 	                if (categoryAxis) {
 	                    var axisDim = categoryAxis.dim;
@@ -39461,7 +39460,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    for (var i = 0; i <= axisIndex; i++) {
 	                        newOption[axisType][axisIndex] = newOption[axisType][axisIndex] || {};
 	                    }
-	                    newOption[axisType][axisIndex].boundaryGap = type === 'bar' ? true : false;
+	                    if (['bar', 'proportion'].indexOf(type) > -1) {
+	                    }
+	                    newOption[axisType][axisIndex].boundaryGap = ['bar', 'proportion', 'summation'].indexOf(type) > -1 ? true : false;
 	                }
 	            }
 	        };
@@ -39492,7 +39493,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (type === 'summation' || type === 'proportion') {
 	          // avoid repeatly sum up
-	          console.log('ready to reset')
 	          history.clear(ecModel);
 	          ecModel.resetOption('recreate');
 	        }
@@ -40495,7 +40495,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var proto = Restore.prototype;
 
 	    proto.onclick = function (ecModel, api, type) {
-	        console.log('ready to clear');
 	        history.clear(ecModel);
 
 	        api.dispatchAction({
@@ -40511,13 +40510,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    __webpack_require__(1).registerAction(
 	        {type: 'restore', event: 'restore', update: 'prepareAndUpdate'},
 	        function (payload, ecModel) {
-	            console.log('ready to recreate');
 	            ecModel.resetOption('recreate');
 	        }
 	    );
 
 	    module.exports = Restore;
-
 
 
 /***/ },
