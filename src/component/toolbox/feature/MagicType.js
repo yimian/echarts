@@ -56,7 +56,7 @@ define(function(require) {
                 }
                 return zrUtil.merge({
                     id: seriesId,
-                    type: 'bar',
+                    type: seriesType,
                     // Preserve data related option
                     data: sum_array,
                     stack: seriesModel.get('stack'),
@@ -70,7 +70,7 @@ define(function(require) {
                 var sum = seriesModel.get('data').reduce(function (a, b) { return a + b; }, 0);
                 return zrUtil.merge({
                     id: seriesId,
-                    type: 'bar',
+                    type: seriesType,
                     // Preserve data related option
                     data: seriesModel.get('data').map(function (d) { return (d * 100) / sum; }),
                     stack: seriesModel.get('stack'),
