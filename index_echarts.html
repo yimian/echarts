@@ -15,10 +15,13 @@
       },
       tooltip: {},
       toolbox: {
+        orient: 'virtical',
         feature: {
           magicType: {
-            type: ['bar', 'proportion'],
-          }
+            defaultType: 'summation',
+            type: ['bar', 'line', 'stack', 'tiled', 'proportion', 'summation'],
+          },
+          restore: {},
         }
       },
       legend: {

@@ -251,6 +251,16 @@ define(function (require) {
         this[IN_MAIN_PROCESS] = false;
 
         this._flushPendingActions();
+        // set default magicType
+        var toolboxOption = this.getOption().toolbox;
+        if (toolboxOption) {
+            var featureOption = toolboxOption[0].feature;
+            if (featureOption && featureOption.magicType && featureOption.magicType.defaultType) {
+                var defaultType = featureOption.magicType.defaultType;
+                var toolboxId = this._model._componentsMap.toolbox[0].__viewId;
+                this._componentsMap[toolboxId]._features['magicType'].model.iconPaths[defaultType].trigger('click');
+            }
+        }
     };
 
     /**
