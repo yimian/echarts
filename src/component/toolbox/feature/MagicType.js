@@ -2,6 +2,7 @@ define(function(require) {
     'use strict';
 
     var zrUtil = require('zrender/core/util');
+    var history = require('../../dataZoom/history');
 
     function MagicType(model) {
         this.model = model;
@@ -61,7 +62,7 @@ define(function(require) {
                     stack: seriesModel.get('stack'),
                     markPoint: seriesModel.get('markPoint'),
                     markLine: seriesModel.get('markLine'),
-                }, model.get('option.proportion') || {}, true);
+                }, model.get('option.summation') || {}, true);
             }
         },
         'proportion': function (seriesType, seriesId, seriesModel, model) {
@@ -160,6 +161,7 @@ define(function(require) {
             }
           }
         }
+
         var generateNewSeriesTypes = function (seriesModel) {
             var seriesType = seriesModel.subType;
             var seriesId = seriesModel.id;
@@ -217,6 +219,12 @@ define(function(require) {
             currentType: type,
             newOption: newOption
         });
+
+        if (type === 'summation' || type === 'proportion') {
+          // avoid repeatly sum up
+          history.clear(ecModel);
+          ecModel.resetOption('recreate');
+        }
     };
 
     var echarts = require('../../../echarts');

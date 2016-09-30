@@ -38669,8 +38669,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    __webpack_require__(372);
 	    __webpack_require__(373);
-	    __webpack_require__(374);
 	    __webpack_require__(375);
+	    __webpack_require__(376);
 	    __webpack_require__(380);
 
 
@@ -39271,6 +39271,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 	    var zrUtil = __webpack_require__(4);
+	    var history = __webpack_require__(374);
 
 	    function MagicType(model) {
 	        this.model = model;
@@ -39330,11 +39331,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    stack: seriesModel.get('stack'),
 	                    markPoint: seriesModel.get('markPoint'),
 	                    markLine: seriesModel.get('markLine'),
-	                }, model.get('option.proportion') || {}, true);
+	                }, model.get('option.summation') || {}, true);
 	            }
 	        },
 	        'proportion': function (seriesType, seriesId, seriesModel, model) {
 	            if (seriesType === 'bar' || seriesType === 'line') {
+	                console.log('proportion data: ', seriesModel.get('data'));
 	                var sum = seriesModel.get('data').reduce(function (a, b) { return a + b; }, 0);
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39429,6 +39431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	          }
 	        }
+
 	        var generateNewSeriesTypes = function (seriesModel) {
 	            var seriesType = seriesModel.subType;
 	            var seriesId = seriesModel.id;
@@ -39486,6 +39489,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	            currentType: type,
 	            newOption: newOption
 	        });
+
+	        if (type === 'summation' || type === 'proportion') {
+	          // avoid repeatly sum up
+	          console.log('ready to reset')
+	          history.clear(ecModel);
+	          ecModel.resetOption('recreate');
+	        }
 	    };
 
 	    var echarts = __webpack_require__(1);
@@ -39505,6 +39515,120 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 374 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * @file History manager.
+	 */
+
+
+	    var zrUtil = __webpack_require__(4);
+	    var each = zrUtil.each;
+
+	    var ATTR = '\0_ec_hist_store';
+
+	    var history = {
+
+	        /**
+	         * @public
+	         * @param {module:echarts/model/Global} ecModel
+	         * @param {Object} newSnapshot {dataZoomId, batch: [payloadInfo, ...]}
+	         */
+	        push: function (ecModel, newSnapshot) {
+	            var store = giveStore(ecModel);
+
+	            // If previous dataZoom can not be found,
+	            // complete an range with current range.
+	            each(newSnapshot, function (batchItem, dataZoomId) {
+	                var i = store.length - 1;
+	                for (; i >= 0; i--) {
+	                    var snapshot = store[i];
+	                    if (snapshot[dataZoomId]) {
+	                        break;
+	                    }
+	                }
+	                if (i < 0) {
+	                    // No origin range set, create one by current range.
+	                    var dataZoomModel = ecModel.queryComponents(
+	                        {mainType: 'dataZoom', subType: 'select', id: dataZoomId}
+	                    )[0];
+	                    if (dataZoomModel) {
+	                        var percentRange = dataZoomModel.getPercentRange();
+	                        store[0][dataZoomId] = {
+	                            dataZoomId: dataZoomId,
+	                            start: percentRange[0],
+	                            end: percentRange[1]
+	                        };
+	                    }
+	                }
+	            });
+
+	            store.push(newSnapshot);
+	        },
+
+	        /**
+	         * @public
+	         * @param {module:echarts/model/Global} ecModel
+	         * @return {Object} snapshot
+	         */
+	        pop: function (ecModel) {
+	            var store = giveStore(ecModel);
+	            var head = store[store.length - 1];
+	            store.length > 1 && store.pop();
+
+	            // Find top for all dataZoom.
+	            var snapshot = {};
+	            each(head, function (batchItem, dataZoomId) {
+	                for (var i = store.length - 1; i >= 0; i--) {
+	                    var batchItem = store[i][dataZoomId];
+	                    if (batchItem) {
+	                        snapshot[dataZoomId] = batchItem;
+	                        break;
+	                    }
+	                }
+	            });
+
+	            return snapshot;
+	        },
+
+	        /**
+	         * @public
+	         */
+	        clear: function (ecModel) {
+	            ecModel[ATTR] = null;
+	        },
+
+	        /**
+	         * @public
+	         * @param {module:echarts/model/Global} ecModel
+	         * @return {number} records. always >= 1.
+	         */
+	        count: function (ecModel) {
+	            return giveStore(ecModel).length;
+	        }
+
+	    };
+
+	    /**
+	     * [{key: dataZoomId, value: {dataZoomId, range}}, ...]
+	     * History length of each dataZoom may be different.
+	     * this._history[0] is used to store origin range.
+	     * @type {Array.<Object>}
+	     */
+	    function giveStore(ecModel) {
+	        var store = ecModel[ATTR];
+	        if (!store) {
+	            store = ecModel[ATTR] = [{}];
+	        }
+	        return store;
+	    }
+
+	    module.exports = history;
+
+
+
+/***/ },
+/* 375 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -39987,7 +40111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 375 */
+/* 376 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39996,7 +40120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var zrUtil = __webpack_require__(4);
 	    var BrushController = __webpack_require__(235);
 	    var brushHelper = __webpack_require__(311);
-	    var history = __webpack_require__(376);
+	    var history = __webpack_require__(374);
 
 	    var each = zrUtil.each;
 
@@ -40295,120 +40419,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 376 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * @file History manager.
-	 */
-
-
-	    var zrUtil = __webpack_require__(4);
-	    var each = zrUtil.each;
-
-	    var ATTR = '\0_ec_hist_store';
-
-	    var history = {
-
-	        /**
-	         * @public
-	         * @param {module:echarts/model/Global} ecModel
-	         * @param {Object} newSnapshot {dataZoomId, batch: [payloadInfo, ...]}
-	         */
-	        push: function (ecModel, newSnapshot) {
-	            var store = giveStore(ecModel);
-
-	            // If previous dataZoom can not be found,
-	            // complete an range with current range.
-	            each(newSnapshot, function (batchItem, dataZoomId) {
-	                var i = store.length - 1;
-	                for (; i >= 0; i--) {
-	                    var snapshot = store[i];
-	                    if (snapshot[dataZoomId]) {
-	                        break;
-	                    }
-	                }
-	                if (i < 0) {
-	                    // No origin range set, create one by current range.
-	                    var dataZoomModel = ecModel.queryComponents(
-	                        {mainType: 'dataZoom', subType: 'select', id: dataZoomId}
-	                    )[0];
-	                    if (dataZoomModel) {
-	                        var percentRange = dataZoomModel.getPercentRange();
-	                        store[0][dataZoomId] = {
-	                            dataZoomId: dataZoomId,
-	                            start: percentRange[0],
-	                            end: percentRange[1]
-	                        };
-	                    }
-	                }
-	            });
-
-	            store.push(newSnapshot);
-	        },
-
-	        /**
-	         * @public
-	         * @param {module:echarts/model/Global} ecModel
-	         * @return {Object} snapshot
-	         */
-	        pop: function (ecModel) {
-	            var store = giveStore(ecModel);
-	            var head = store[store.length - 1];
-	            store.length > 1 && store.pop();
-
-	            // Find top for all dataZoom.
-	            var snapshot = {};
-	            each(head, function (batchItem, dataZoomId) {
-	                for (var i = store.length - 1; i >= 0; i--) {
-	                    var batchItem = store[i][dataZoomId];
-	                    if (batchItem) {
-	                        snapshot[dataZoomId] = batchItem;
-	                        break;
-	                    }
-	                }
-	            });
-
-	            return snapshot;
-	        },
-
-	        /**
-	         * @public
-	         */
-	        clear: function (ecModel) {
-	            ecModel[ATTR] = null;
-	        },
-
-	        /**
-	         * @public
-	         * @param {module:echarts/model/Global} ecModel
-	         * @return {number} records. always >= 1.
-	         */
-	        count: function (ecModel) {
-	            return giveStore(ecModel).length;
-	        }
-
-	    };
-
-	    /**
-	     * [{key: dataZoomId, value: {dataZoomId, range}}, ...]
-	     * History length of each dataZoom may be different.
-	     * this._history[0] is used to store origin range.
-	     * @type {Array.<Object>}
-	     */
-	    function giveStore(ecModel) {
-	        var store = ecModel[ATTR];
-	        if (!store) {
-	            store = ecModel[ATTR] = [{}];
-	        }
-	        return store;
-	    }
-
-	    module.exports = history;
-
-
-
-/***/ },
 /* 377 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -40470,7 +40480,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 
-	    var history = __webpack_require__(376);
+	    var history = __webpack_require__(374);
 
 	    function Restore(model) {
 	        this.model = model;
@@ -40485,6 +40495,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var proto = Restore.prototype;
 
 	    proto.onclick = function (ecModel, api, type) {
+	        console.log('ready to clear');
 	        history.clear(ecModel);
 
 	        api.dispatchAction({
@@ -40500,11 +40511,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    __webpack_require__(1).registerAction(
 	        {type: 'restore', event: 'restore', update: 'prepareAndUpdate'},
 	        function (payload, ecModel) {
+	            console.log('ready to recreate');
 	            ecModel.resetOption('recreate');
 	        }
 	    );
 
 	    module.exports = Restore;
+
 
 
 /***/ },
