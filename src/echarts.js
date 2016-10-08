@@ -291,6 +291,10 @@ define(function (require) {
         return this._zr.getWidth();
     };
 
+    echartsProto.getCurrentMagicType = function () {
+        return this._api.getCurrentMagicType();
+    };
+
     /**
      * @return {number}
      */

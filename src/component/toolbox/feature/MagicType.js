@@ -130,6 +130,9 @@ define(function(require) {
     ];
 
     proto.onclick = function (ecModel, api, type) {
+        api.getCurrentMagicType = function () {
+            return type;
+        }
         var model = this.model;
         var seriesIndex = model.get('seriesIndex.' + type);
         // Not supported magicType
@@ -227,6 +230,7 @@ define(function(require) {
           history.clear(ecModel);
           ecModel.resetOption('recreate');
         }
+
     };
 
     var echarts = require('../../../echarts');

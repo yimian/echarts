@@ -374,6 +374,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this._zr.getWidth();
 	    };
 
+	    echartsProto.getCurrentMagicType = function () {
+	        return this._api.getCurrentMagicType();
+	    };
+
 	    /**
 	     * @return {number}
 	     */
@@ -6273,7 +6277,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var echartsAPIList = [
 	        'getDom', 'getZr', 'getWidth', 'getHeight', 'dispatchAction', 'isDisposed',
-	        'on', 'off', 'getDataURL', 'getConnectedDataURL', 'getModel', 'getOption'
+	        'on', 'off', 'getDataURL', 'getConnectedDataURL', 'getModel', 'getOption',
+	        'getCurrentMagicType',
 	    ];
 
 	    function ExtensionAPI(chartInstance) {
@@ -6283,6 +6288,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    module.exports = ExtensionAPI;
+
 
 
 /***/ },
@@ -39399,6 +39405,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ];
 
 	    proto.onclick = function (ecModel, api, type) {
+	        api.getCurrentMagicType = function () {
+	            return type;
+	        }
 	        var model = this.model;
 	        var seriesIndex = model.get('seriesIndex.' + type);
 	        // Not supported magicType
@@ -39496,6 +39505,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          history.clear(ecModel);
 	          ecModel.resetOption('recreate');
 	        }
+
 	    };
 
 	    var echarts = __webpack_require__(1);

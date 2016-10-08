@@ -361,6 +361,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return this._zr.getWidth();
 	    };
 
+	    echartsProto.getCurrentMagicType = function () {
+	        return this._api.getCurrentMagicType();
+	    };
+
 	    /**
 	     * @return {number}
 	     */
@@ -6260,7 +6264,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var echartsAPIList = [
 	        'getDom', 'getZr', 'getWidth', 'getHeight', 'dispatchAction', 'isDisposed',
-	        'on', 'off', 'getDataURL', 'getConnectedDataURL', 'getModel', 'getOption'
+	        'on', 'off', 'getDataURL', 'getConnectedDataURL', 'getModel', 'getOption',
+	        'getCurrentMagicType',
 	    ];
 
 	    function ExtensionAPI(chartInstance) {
@@ -6270,6 +6275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    module.exports = ExtensionAPI;
+
 
 
 /***/ },
