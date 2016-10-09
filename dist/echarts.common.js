@@ -39322,10 +39322,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 
 	    var seriesOptGenreator = {
-	        'summation': function (seriesType, seriesId, seriesModel, model) {
+	        'summation': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'bar' || seriesType === 'line') {
 	                var sum_array = [];
-	                var data = seriesModel.get('data');
+	                var data = seriesData.data;
 	                for (var i=1; i<=data.length;i++) {
 	                  sum_array.push(data.slice(0, i).reduce(function (a, b) { return a + b; }, 0));
 	                }
@@ -39340,21 +39340,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, model.get('option.summation') || {}, true);
 	            }
 	        },
-	        'proportion': function (seriesType, seriesId, seriesModel, model) {
+	        'proportion': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'bar' || seriesType === 'line') {
-	                var sum = seriesModel.get('data').reduce(function (a, b) { return a + b; }, 0);
+	                var sum = seriesData.data.reduce(function (a, b) { return a + b; }, 0);
 	                return zrUtil.merge({
 	                    id: seriesId,
 	                    type: seriesType,
 	                    // Preserve data related option
-	                    data: seriesModel.get('data').map(function (d) { return (d * 100) / sum; }),
+	                    data: seriesData.data.map(function (d) { return (d * 100) / sum; }),
 	                    stack: seriesModel.get('stack'),
 	                    markPoint: seriesModel.get('markPoint'),
 	                    markLine: seriesModel.get('markLine'),
 	                }, model.get('option.proportion') || {}, true);
 	            }
 	        },
-	        'line': function (seriesType, seriesId, seriesModel, model) {
+	        'line': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'bar') {
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39367,7 +39367,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, model.get('option.line') || {}, true);
 	            }
 	        },
-	        'bar': function (seriesType, seriesId, seriesModel, model) {
+	        'bar': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'line') {
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39380,7 +39380,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, model.get('option.bar') || {}, true);
 	            }
 	        },
-	        'stack': function (seriesType, seriesId, seriesModel, model) {
+	        'stack': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'line' || seriesType === 'bar') {
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39388,7 +39388,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }, model.get('option.stack') || {}, true);
 	            }
 	        },
-	        'tiled': function (seriesType, seriesId, seriesModel, model) {
+	        'tiled': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'line' || seriesType === 'bar') {
 	                return zrUtil.merge({
 	                    id: seriesId,
@@ -39402,6 +39402,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        ['line', 'bar'],
 	        ['stack', 'tiled'],
 	        ['proportion', 'bar', 'line'],
+	        ['summation', 'bar', 'line'],
 	    ];
 
 	    proto.onclick = function (ecModel, api, type) {
@@ -39441,10 +39442,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        var generateNewSeriesTypes = function (seriesModel) {
+	            // seriesData is the original option series data
+	            var seriesData = ecModel._optionManager.mountOption().series[seriesModel.seriesIndex]
 	            var seriesType = seriesModel.subType;
 	            var seriesId = seriesModel.id;
 	            var newSeriesOpt = seriesOptGenreator[type](
-	                seriesType, seriesId, seriesModel, model
+	                seriesType, seriesId, seriesModel, model, seriesData
 	            );
 	            if (newSeriesOpt) {
 	                // PENDING If merge original option?
@@ -39468,8 +39471,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    newOption[axisType] = newOption[axisType] || [];
 	                    for (var i = 0; i <= axisIndex; i++) {
 	                        newOption[axisType][axisIndex] = newOption[axisType][axisIndex] || {};
-	                    }
-	                    if (['bar', 'proportion'].indexOf(type) > -1) {
 	                    }
 	                    newOption[axisType][axisIndex].boundaryGap = ['bar', 'proportion', 'summation'].indexOf(type) > -1 ? true : false;
 	                }
@@ -39499,13 +39500,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            currentType: type,
 	            newOption: newOption
 	        });
-
-	        if (type === 'summation' || type === 'proportion') {
-	          // avoid repeatly sum up
-	          history.clear(ecModel);
-	          ecModel.resetOption('recreate');
-	        }
-
 	    };
 
 	    var echarts = __webpack_require__(1);
