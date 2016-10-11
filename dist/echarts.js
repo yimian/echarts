@@ -61846,15 +61846,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        if (type === 'summation') {
-	          newOption.tooltip = {
-	            trigger: 'axis',
-	            formatter: function (params) {
-	              var result = '';
-	              params.map(function (param, idx) {
-	                var paramValue = originSeriesData[param.seriesIndex].slice(0, param.dataIndex).reduce(function (a, b) { return a + b; }, 0);
-	                result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
-	              });
-	              return result;
+	          console.log(model.ecModel.option.clicked);
+	          if (model.ecModel.option.clicked) {
+	            newOption.tooltip = {
+	              trigger: 'axis',
+	              formatter: function (params) {
+	                var result = '';
+	                params.map(function (param, idx) {
+	                  var paramValue = originSeriesData[param.seriesIndex].slice(0, param.dataIndex+1).reduce(function (a, b) { return a + b; }, 0);
+	                  result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
+	                });
+	                return result;
+	              }
+	            }
+	          } else {
+	            newOption.tooltip = {
 	            }
 	          }
 	        }
