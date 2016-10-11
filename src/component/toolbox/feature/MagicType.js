@@ -49,16 +49,29 @@ define(function(require) {
     var seriesOptGenreator = {
         'summation': function (seriesType, seriesId, seriesModel, model, seriesData) {
             if (seriesType === 'bar' || seriesType === 'line') {
+                var data = [];
                 var sum_array = [];
                 var data = seriesData.data;
                 for (var i=1; i<=data.length;i++) {
                   sum_array.push(data.slice(0, i).reduce(function (a, b) { return a + b; }, 0));
                 }
+                var sum = sum_array.reduce(function (a, b) { return a + b; }, 0);
+                if (model.ecModel.option.clicked) {
+                  var percent_sum_array = [];
+                  sum_array = sum_array.map(function (d) { return (d * 100) / sum; });
+                  for (var i=1; i<=sum_array.length;i++) {
+                    percent_sum_array.push(sum_array.slice(0, i).reduce(function (a, b) {return a + b; }, 0));
+                  }
+                  data = percent_sum_array;
+                } else {
+                  data = sum_array;
+                }
+
                 return zrUtil.merge({
                     id: seriesId,
                     type: seriesType,
                     // Preserve data related option
-                    data: sum_array,
+                    data: data,
                     stack: seriesModel.get('stack'),
                     markPoint: seriesModel.get('markPoint'),
                     markLine: seriesModel.get('markLine'),
@@ -125,9 +138,7 @@ define(function(require) {
 
     var radioTypes = [
         ['line', 'bar'],
-        ['stack', 'tiled'],
-        ['proportion', 'bar', 'line'],
-        ['summation', 'bar', 'line'],
+        ['stack', 'tiled', 'proportion', 'summation'],
     ];
 
     proto.onclick = function (ecModel, api, type) {
@@ -143,14 +154,21 @@ define(function(require) {
         var newOption = {
             series: []
         };
+
+        var originSeriesData = ecModel._optionManager.mountOption().series.map(function (s) { return s.data });
         if (type === 'proportion') {
+          newOption.clicked = true;
           newOption.yAxis = [
             {
               type: 'value',
               axisLabel: {
                 show: true,
                 interval: 'auto',
-                formatter: '{value} %'
+                formatter: {
+                  humanReadable: true,
+                  locale: 'en-US',
+                  unit: '%',
+                },
               }
             }
           ];
@@ -158,8 +176,23 @@ define(function(require) {
             trigger: 'axis',
             formatter: function (params) {
               var result = '';
-              params.map(function (param) {
-                result += param.seriesName + '<br>' + param.name + ' : ' + param.data + '%' + '<br>';
+              params.map(function (param, idx) {
+                var paramValue = originSeriesData[param.seriesIndex][param.dataIndex];
+                result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
+              });
+              return result;
+            }
+          }
+        }
+
+        if (type === 'summation') {
+          newOption.tooltip = {
+            trigger: 'axis',
+            formatter: function (params) {
+              var result = '';
+              params.map(function (param, idx) {
+                var paramValue = originSeriesData[param.seriesIndex].slice(0, param.dataIndex).reduce(function (a, b) { return a + b; }, 0);
+                result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
               });
               return result;
             }

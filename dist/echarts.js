@@ -3956,7 +3956,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return nf * exp10;
 	    };
 
+	    /**
+	     * abbreviate number ref: http://stackoverflow.com/questions/10599933/convert-long-number-into-abbreviated-string-in-javascript-with-a-special-shortn
+	     * @param {number} value
+	     * @param {string} locale
+	     * @return {string}
+	     */
+	    number.abbreviateNumber = function (value, locale) {
+	        var newValue = value;
+	        var config = {
+	          'en-US': {
+	            suffixes: ['', 'k', 'm', 'b', 't'],
+	            baseNumber: 3,
+	          },
+	          'zh-CN': {
+	            suffixes: ['', '万', '亿'],
+	            baseNumber: 4,
+	          },
+	        };
+
+	        if (config[locale]) {
+	          var suffixes = config[locale].suffixes;
+	          var baseNumber = config[locale].baseNumber;
+	          var baseValue = Math.pow(10, baseNumber);
+	          if (value >= baseValue) {
+	            var suffixNum = Math.floor( (('' + value).length - 1) / baseNumber);
+	            newValue = (value / (Math.pow(baseValue, suffixNum))).toFixed(1) + suffixes[suffixNum];
+	          }
+	        }
+	        return newValue;
+	    };
+
 	    module.exports = number;
+
 
 
 /***/ },
@@ -25174,12 +25206,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	                );
 	            }, this);
 	        }
+	        // human readable yaxis
+	        else if (typeof labelFormatter === 'object') {
+	            if (axis.dim === 'y' && labelFormatter.humanReadable) {
+	              var unit = labelFormatter.unit ? labelFormatter.unit : '';
+	              var locale = labelFormatter.locale ? labelFormatter.locale : 'en-US';
+	              labelFormatter = (function () {
+	                return function (val) {
+	                  // human readable val
+	                  var newVal = numberUtil.abbreviateNumber(parseInt(val.replace(/,/g, '')), locale);
+	                  return newVal + unit;
+	                }
+	              })(labelFormatter);
+	              return zrUtil.map(labels, labelFormatter);
+	            } else {
+	              return labels;
+	            }
+	        }
 	        else {
 	            return labels;
 	        }
 	    };
 
 	    module.exports = axisHelper;
+
 
 
 /***/ },
@@ -61659,16 +61709,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var seriesOptGenreator = {
 	        'summation': function (seriesType, seriesId, seriesModel, model, seriesData) {
 	            if (seriesType === 'bar' || seriesType === 'line') {
+	                var data = [];
 	                var sum_array = [];
 	                var data = seriesData.data;
 	                for (var i=1; i<=data.length;i++) {
 	                  sum_array.push(data.slice(0, i).reduce(function (a, b) { return a + b; }, 0));
 	                }
+	                var sum = sum_array.reduce(function (a, b) { return a + b; }, 0);
+	                if (model.ecModel.option.clicked) {
+	                  var percent_sum_array = [];
+	                  sum_array = sum_array.map(function (d) { return (d * 100) / sum; });
+	                  for (var i=1; i<=sum_array.length;i++) {
+	                    percent_sum_array.push(sum_array.slice(0, i).reduce(function (a, b) {return a + b; }, 0));
+	                  }
+	                  data = percent_sum_array;
+	                } else {
+	                  data = sum_array;
+	                }
+
 	                return zrUtil.merge({
 	                    id: seriesId,
 	                    type: seriesType,
 	                    // Preserve data related option
-	                    data: sum_array,
+	                    data: data,
 	                    stack: seriesModel.get('stack'),
 	                    markPoint: seriesModel.get('markPoint'),
 	                    markLine: seriesModel.get('markLine'),
@@ -61735,9 +61798,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var radioTypes = [
 	        ['line', 'bar'],
-	        ['stack', 'tiled'],
-	        ['proportion', 'bar', 'line'],
-	        ['summation', 'bar', 'line'],
+	        ['stack', 'tiled', 'proportion', 'summation'],
 	    ];
 
 	    proto.onclick = function (ecModel, api, type) {
@@ -61753,14 +61814,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var newOption = {
 	            series: []
 	        };
+
+	        var originSeriesData = ecModel._optionManager.mountOption().series.map(function (s) { return s.data });
 	        if (type === 'proportion') {
+	          newOption.clicked = true;
 	          newOption.yAxis = [
 	            {
 	              type: 'value',
 	              axisLabel: {
 	                show: true,
 	                interval: 'auto',
-	                formatter: '{value} %'
+	                formatter: {
+	                  humanReadable: true,
+	                  locale: 'en-US',
+	                  unit: '%',
+	                },
 	              }
 	            }
 	          ];
@@ -61768,8 +61836,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	            trigger: 'axis',
 	            formatter: function (params) {
 	              var result = '';
-	              params.map(function (param) {
-	                result += param.seriesName + '<br>' + param.name + ' : ' + param.data + '%' + '<br>';
+	              params.map(function (param, idx) {
+	                var paramValue = originSeriesData[param.seriesIndex][param.dataIndex];
+	                result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
+	              });
+	              return result;
+	            }
+	          }
+	        }
+
+	        if (type === 'summation') {
+	          newOption.tooltip = {
+	            trigger: 'axis',
+	            formatter: function (params) {
+	              var result = '';
+	              params.map(function (param, idx) {
+	                var paramValue = originSeriesData[param.seriesIndex].slice(0, param.dataIndex).reduce(function (a, b) { return a + b; }, 0);
+	                result += param.seriesName + '<br>' + param.name + ' : ' + paramValue.toLocaleString() + '(' + param.data.toFixed(1) + '%)' + '<br>';
 	              });
 	              return result;
 	            }

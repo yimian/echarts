@@ -6,10 +6,11 @@
 </head>
 <body>
   <div id="main" style="width: 600px; height: 400px"></div>
-  <script src="dist/echarts.min.js"></script>
+  <script src="dist/echarts.js"></script>
   <script type="text/javascript">
     var myChart = echarts.init(document.getElementById('main'));
     var option = {
+      currentMagicType: 'summation',
       title: {
         text: 'introduction',
       },
@@ -25,16 +26,30 @@
         }
       },
       legend: {
-        data: ['sales'],
+        data: ['sales', 'price'],
       },
       xAxis: {
         data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"],
       },
-      yAxis: {},
+      yAxis: {
+        // interval: 5000,
+        axisLabel: {
+          interval: 1,
+          formatter: {
+            humanReadable: true,
+            locale: 'en-US',
+            unit: '',
+          },
+        }
+      },
       series: [{
         name: 'sales',
         type: 'bar',
-        data: [5, 20, 36, 10, 10, 20]
+        data: [5000, 20000, 36000, 10000, 10000, 20000].map(function(data) {return data * 1})
+      },{
+        name: 'price',
+        type: 'bar',
+        data: [5000, 20000, 36000, 10000, 10000, 20000].map(function(data) {return data * 1.8})
       }]
     };
 

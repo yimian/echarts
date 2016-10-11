@@ -220,6 +220,23 @@ define(function (require) {
                 );
             }, this);
         }
+        // human readable yaxis
+        else if (typeof labelFormatter === 'object') {
+            if (axis.dim === 'y' && labelFormatter.humanReadable) {
+              var unit = labelFormatter.unit ? labelFormatter.unit : '';
+              var locale = labelFormatter.locale ? labelFormatter.locale : 'en-US';
+              labelFormatter = (function () {
+                return function (val) {
+                  // human readable val
+                  var newVal = numberUtil.abbreviateNumber(parseInt(val.replace(/,/g, '')), locale);
+                  return newVal + unit;
+                }
+              })(labelFormatter);
+              return zrUtil.map(labels, labelFormatter);
+            } else {
+              return labels;
+            }
+        }
         else {
             return labels;
         }

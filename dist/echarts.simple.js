@@ -3917,7 +3917,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	        return nf * exp10;
 	    };
 
+	    /**
+	     * abbreviate number ref: http://stackoverflow.com/questions/10599933/convert-long-number-into-abbreviated-string-in-javascript-with-a-special-shortn
+	     * @param {number} value
+	     * @param {string} locale
+	     * @return {string}
+	     */
+	    number.abbreviateNumber = function (value, locale) {
+	        var newValue = value;
+	        var config = {
+	          'en-US': {
+	            suffixes: ['', 'k', 'm', 'b', 't'],
+	            baseNumber: 3,
+	          },
+	          'zh-CN': {
+	            suffixes: ['', '万', '亿'],
+	            baseNumber: 4,
+	          },
+	        };
+
+	        if (config[locale]) {
+	          var suffixes = config[locale].suffixes;
+	          var baseNumber = config[locale].baseNumber;
+	          var baseValue = Math.pow(10, baseNumber);
+	          if (value >= baseValue) {
+	            var suffixNum = Math.floor( (('' + value).length - 1) / baseNumber);
+	            newValue = (value / (Math.pow(baseValue, suffixNum))).toFixed(1) + suffixes[suffixNum];
+	          }
+	        }
+	        return newValue;
+	    };
+
 	    module.exports = number;
+
 
 
 /***/ },
@@ -25135,12 +25167,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	                );
 	            }, this);
 	        }
+	        // human readable yaxis
+	        else if (typeof labelFormatter === 'object') {
+	            if (axis.dim === 'y' && labelFormatter.humanReadable) {
+	              var unit = labelFormatter.unit ? labelFormatter.unit : '';
+	              var locale = labelFormatter.locale ? labelFormatter.locale : 'en-US';
+	              labelFormatter = (function () {
+	                return function (val) {
+	                  // human readable val
+	                  var newVal = numberUtil.abbreviateNumber(parseInt(val.replace(/,/g, '')), locale);
+	                  return newVal + unit;
+	                }
+	              })(labelFormatter);
+	              return zrUtil.map(labels, labelFormatter);
+	            } else {
+	              return labels;
+	            }
+	        }
 	        else {
 	            return labels;
 	        }
 	    };
 
 	    module.exports = axisHelper;
+
 
 
 /***/ },

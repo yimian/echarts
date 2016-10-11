@@ -248,5 +248,36 @@ define(function (require) {
         return nf * exp10;
     };
 
+    /**
+     * abbreviate number ref: http://stackoverflow.com/questions/10599933/convert-long-number-into-abbreviated-string-in-javascript-with-a-special-shortn
+     * @param {number} value
+     * @param {string} locale
+     * @return {string}
+     */
+    number.abbreviateNumber = function (value, locale) {
+        var newValue = value;
+        var config = {
+          'en-US': {
+            suffixes: ['', 'k', 'm', 'b', 't'],
+            baseNumber: 3,
+          },
+          'zh-CN': {
+            suffixes: ['', '万', '亿'],
+            baseNumber: 4,
+          },
+        };
+
+        if (config[locale]) {
+          var suffixes = config[locale].suffixes;
+          var baseNumber = config[locale].baseNumber;
+          var baseValue = Math.pow(10, baseNumber);
+          if (value >= baseValue) {
+            var suffixNum = Math.floor( (('' + value).length - 1) / baseNumber);
+            newValue = (value / (Math.pow(baseValue, suffixNum))).toFixed(1) + suffixes[suffixNum];
+          }
+        }
+        return newValue;
+    };
+
     return number;
 });
