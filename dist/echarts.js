@@ -367,7 +367,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (featureOption && featureOption.magicType && featureOption.magicType.defaultType) {
 	                var defaultType = featureOption.magicType.defaultType;
 	                var toolboxId = this._model._componentsMap.toolbox[0].__viewId;
-	                this._componentsMap[toolboxId]._features['magicType'].model.iconPaths[defaultType].trigger('click');
+	                this._componentsMap[toolboxId]._features.magicType.model.iconPaths[defaultType].trigger('click');
 	            }
 	        }
 	    };
@@ -402,6 +402,32 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    echartsProto.getCurrentMagicType = function () {
 	        return this._api.getCurrentMagicType();
+	    };
+
+	    echartsProto.setCurrentMagicType = function (type, isStack, isPercentage) {
+	        var toolboxOption = this.getOption().toolbox;
+	        if (toolboxOption) {
+	            var featureOption = toolboxOption[0].feature;
+	            if (featureOption && featureOption.magicType && featureOption.magicType.defaultType) {
+	                var toolboxId = this._model._componentsMap.toolbox[0].__viewId;
+	                this._componentsMap[toolboxId]._features.magicType.model.iconPaths[type].trigger('click');
+	                if (isPercentage) {
+	                  this._componentsMap[toolboxId]._features.restore.model.iconPaths.restore.trigger('click');
+	                  this._componentsMap[toolboxId]._features.magicType.model.iconPaths.proportion.trigger('click');
+	                  this._componentsMap[toolboxId]._features.magicType.model.iconPaths[type].trigger('click');
+	                } else {
+	                  this._componentsMap[toolboxId]._features.restore.model.iconPaths.restore.trigger('click');
+	                  this._componentsMap[toolboxId]._features.magicType.model.iconPaths[type].trigger('click');
+	                }
+	                if (isStack) {
+	                  console.log('is stack');
+	                  this._componentsMap[toolboxId]._features.magicType.model.iconPaths.stack.trigger('click');
+	                } else {
+	                  console.log('is tiled');
+	                  this._componentsMap[toolboxId]._features.magicType.model.iconPaths.tiled.trigger('click');
+	                }
+	            }
+	        }
 	    };
 
 	    /**
@@ -770,7 +796,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	     * @param  {Object} [cfg]
 	     */
 	    echartsProto.showLoading = function (name, cfg) {
-	        var loadingOption = this._api.getOption().loading;
+	        var loadingOption = this._theme ? _this._theme.loading : {};
 	        if (this.isError) {
 	          this.hideLoading();
 	          this.isError = false;
