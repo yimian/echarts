@@ -50,10 +50,13 @@
         name: 'price',
         type: 'bar',
         data: [5000, 20000, 36000, 10000, 10000, 20000].map(function(data) {return data * 1.8})
-      }]
+      }],
+      loading: {
+        refresh: true,
+      }
     };
 
-    // myChart.showError()
+    // myChart.showLoading()
     myChart.setOption(option);
   </script>
 </body>

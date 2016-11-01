@@ -687,7 +687,7 @@ define(function (require) {
      * @param  {Object} [cfg]
      */
     echartsProto.showLoading = function (name, cfg) {
-        var loadingOption = this._theme ? _this._theme.loading : {};
+        var loadingOption = this._theme ? this._theme.loading : {};
         if (this.isError) {
           this.hideLoading();
           this.isError = false;
