@@ -14,7 +14,10 @@
       title: {
         text: 'introduction',
       },
-      tooltip: {},
+      tooltip: {
+        trigger: 'axis',
+        formatter: '{b} <br/> {color0} {a0}: {c0} <br/> {color1} {a1}: {c1}',
+      },
       toolbox: {
         orient: 'virtical',
         feature: {
@@ -28,9 +31,12 @@
       legend: {
         data: ['sales', 'price'],
       },
-      xAxis: {
-        data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"],
-      },
+      xAxis: [
+        {
+          type: 'category',
+          data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"],
+        }
+      ],
       yAxis: {
         // interval: 5000,
         axisLabel: {

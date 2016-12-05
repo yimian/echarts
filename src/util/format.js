@@ -88,12 +88,23 @@ define(function (require) {
             tpl = tpl.replace(wrapVar(alias),  wrapVar(alias, 0));
         }
         for (var seriesIdx = 0; seriesIdx < seriesLen; seriesIdx++) {
+            var color = paramsList[seriesIdx].color;
+            var colorEl = '<span style="display:inline-block;margin-right:5px;'
+                + 'border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+            tpl = tpl.replace('{color' + seriesIdx + '}', colorEl);
             for (var k = 0; k < $vars.length; k++) {
                 tpl = tpl.replace(
                     wrapVar(TPL_VAR_ALIAS[k], seriesIdx),
                     paramsList[seriesIdx][$vars[k]]
                 );
             }
+        }
+
+        if (seriesLen === 1) {
+            var color = paramsList[0].color;
+            var colorEl = '<span style="display:inline-block;margin-right:5px;'
+                + 'border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+            tpl = tpl.replace('{color}', colorEl);
         }
 
         return tpl;
