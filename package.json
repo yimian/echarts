@@ -1,6 +1,6 @@
 {
   "name": "ym-echarts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful charting and visualization library for browser, extra functionality added for ym",
   "keywords": [
     "visualization",
