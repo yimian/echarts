@@ -3617,7 +3617,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var color = paramsList[seriesIdx].color;
 	            var colorEl = '<span style="display:inline-block;margin-right:5px;'
 	                + 'border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
-	            tpl = tpl.replace('{color' + seriesIdx + '}', colorEl);
+	            var regex = new RegExp('{color' + seriesIdx + '}', 'g');
+	            if (seriesIdx === 0) {
+	                tpl = tpl.replace(/{color}/g, colorEl).replace(regex, colorEl);
+	            } else {
+	                tpl = tpl.replace(regex, colorEl);
+	            }
 	            for (var k = 0; k < $vars.length; k++) {
 	                tpl = tpl.replace(
 	                    wrapVar(TPL_VAR_ALIAS[k], seriesIdx),
@@ -3625,14 +3630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                );
 	            }
 	        }
-
-	        if (seriesLen === 1) {
-	            var color = paramsList[0].color;
-	            var colorEl = '<span style="display:inline-block;margin-right:5px;'
-	                + 'border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
-	            tpl = tpl.replace('{color}', colorEl);
-	        }
-
+	        tpl = tpl.replace(/{.*}/, '');
 	        return tpl;
 	    };
 
